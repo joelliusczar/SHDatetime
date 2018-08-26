@@ -1,14 +1,9 @@
 CC=gcc
 CFLAGS=-Wall -Wextra $(DEBUG)
+rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 INC=-ISHGlobal_C -ISHDatetime -ISH_CTools
-HEADER_FILES=SHGlobal_C/SHConstants.h  SH_CTools/ErrorHandling.h \
- SH_CTools/SHGenAlgos.h  SHDatetime/DTConstants.h  \
- SHDatetime/SHTimeZone.h SHDatetime/SHDatetime.h \
- cl_datetime.h
-SOURCES=SHGlobal_C/SHConstants.c  SH_CTools/ErrorHandling.c \
- SH_CTools/SHGenAlgos.c  SHDatetime/DTConstants.c  \
- SHDatetime/SHTimeZone.c SHDatetime/SHDatetime.c \
- cl_datetime.c
+HEADER_FILES := $(call rwildcard,./,*.h)
+SOURCES:= $(call rwildcard,./,*.c)
  OBJECTS=$(SOURCES:.c=.o)
  EXECUTABLE=dt_prompt
  DT_SHARED=dt
@@ -39,5 +34,4 @@ $(DT_SHARED_FULL): $(OBJECTS)
 clean:
 	-@find . -type f -name '*.o' -exec rm {} + 2>/dev/null || true
 	-@rm *.o dt_prompt *.so 2>/dev/null || true
-
 
