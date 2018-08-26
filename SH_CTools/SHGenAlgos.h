@@ -20,6 +20,7 @@
 #endif 
 
 #include <stdio.h>
-long calcStrHash(char const *str);
-double kahanSum(const double* const nums,int len);
+#include <inttypes.h>
+int64_t calcStrHash(char const *str);
+double kahanSum(const double* const nums,int64_t len);
 #endif /* SHGenAlgos_h */
