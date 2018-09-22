@@ -9,6 +9,14 @@ These are the ranges that Python 3's datetime functions allow, which my code was
 
 Download the code, then run make from the folder that all of the code is downloaded to. Directory structure must be maintained.
 
+## Running command line utility
+
+### Timestamp to datetime string
+
+`
+dt_prompt ts_dt -ts <timestamp>
+`
+
 ## Testing
 
 After you have built the shared library, you can run my unit tests with dt_test.py and pytest. For more exhaustive testing, you can run cl_dt_all.py and pass in a min and max timestamp.
