@@ -1,4 +1,5 @@
 #include "SHDatetime_struct.h"
+#include "ErrorHandling.h"
 
 
 long cl_dtToTimestamp(int argc,char *argv[],int *error);
@@ -8,5 +9,5 @@ long dayDiff(int argc,char *argv[],int *error);
 long secDiff(int argc,char *argv[],int *error);
 int cl_calcWeekdayIdx(int argc,char *argv[],int *error);
 long secDiff(int argc,char *argv[],int *error);
-int selectChoice(int argc,char *argv[]);
-int cl_datetime(int argc,char *argv[]);
+SHErrorCode selectChoice(int argc,char *argv[]);
+SHErrorCode cl_datetime(int argc,char *argv[]);

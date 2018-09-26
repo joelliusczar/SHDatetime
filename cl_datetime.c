@@ -6,6 +6,7 @@
 #include "SHArray.h"
 #include "SHGenAlgos.h"
 #include "ErrorHandling.h"
+#include <inttypes.h>
 
 DEF_RESIZE_ARR(Timeshift)
 
@@ -35,7 +36,7 @@ static void _printHelpMenu(){
 }
 
 static int _argsToTimeshifts(int argc,char *argv[],SHDatetime *dt,int lastIdx
-  ,int *error,int *alsize){
+  ,SHErrorCode* error,int *alsize){
     if((argc -lastIdx) >= 5){
         int shiftIdx = dt->shiftLen-1;
         if(!dt->shifts){
@@ -65,7 +66,7 @@ static int _argsToTimeshifts(int argc,char *argv[],SHDatetime *dt,int lastIdx
 }
 
 static int _loadDateArgsIntoDt(int argc,char *argv[],SHDatetime *dt,int lastIdx
-  ,int *error){
+  ,SHErrorCode* error){
     if((argc -lastIdx) < 3) return lastIdx;
     char *ptr;
     dt->year = strtol(argv[lastIdx++],&ptr,10);
@@ -86,7 +87,7 @@ static int _loadDateArgsIntoDt(int argc,char *argv[],SHDatetime *dt,int lastIdx
 }
 
 static int _loadTimeArgsIntoDt(int argc,char *argv[],SHDatetime *dt,int lastIdx
-  ,int *error){
+  ,SHErrorCode* error){
     if((argc -lastIdx) < 3) return lastIdx;
     char *ptr;
     dt->hour = strtol(argv[lastIdx++],&ptr,10);
@@ -99,7 +100,7 @@ static int _loadTimeArgsIntoDt(int argc,char *argv[],SHDatetime *dt,int lastIdx
 }
 
 static int _loadTimestampArgs(int argc,char *argv[],double *timestamp,int *tzOffset
-  ,int lastIdx,int *error){
+  ,int lastIdx,SHErrorCode* error){
     if((argc -lastIdx) < 1) return lastIdx;
     char *ptr;
     *timestamp = strtol(argv[lastIdx++],&ptr,10);
@@ -116,7 +117,7 @@ static int _loadTimestampArgs(int argc,char *argv[],double *timestamp,int *tzOff
     return lastIdx;
 }
 
-static int _loadAddUnitArgs(int argc,char *argv[],long *add,int lastIdx,int *error){
+static int _loadAddUnitArgs(int argc,char *argv[],long *add,int lastIdx,SHErrorCode* error){
     if((argc -lastIdx) < 1) return lastIdx;
     char *ptr;
     *add = strtol(argv[lastIdx++],&ptr,10);
@@ -125,7 +126,7 @@ static int _loadAddUnitArgs(int argc,char *argv[],long *add,int lastIdx,int *err
 }
 
 static int _loadDateTimeArgs(int argc,char *argv[],int lastIdx
-  ,int *error, int (*load_fp)(int,char **,SHDatetime *,int,int *),int *parseCount){
+  ,SHErrorCode* error, int (*load_fp)(int,char **,SHDatetime*,int,SHErrorCode*),int *parseCount){
     SHDatetime *dtPt = (*parseCount > 0 
       && (choiceHash == ddiff || choiceHash == sdiff))
       ? &dtb : &dt;
@@ -136,7 +137,7 @@ static int _loadDateTimeArgs(int argc,char *argv[],int lastIdx
 }
 
 static int _loadTimeAddOptionArg(int argc,char *argv[],TimeAdjustOptions *opt,int lastIdx
-  ,int *error){
+  ,SHErrorCode* error){
     *opt = 0;
     if((argc -lastIdx) < 1) return lastIdx;
     if(!strcmp(argv[lastIdx],"-stf")){
@@ -157,7 +158,7 @@ static int _loadTimeAddOptionArg(int argc,char *argv[],TimeAdjustOptions *opt,in
     return ++lastIdx;
 }
 
-static int _loadDtPart(int argc,char *argv[],int idx,int *error){
+static int _loadDtPart(int argc,char *argv[],int idx,SHErrorCode* error){
     int alsize = 4;
     
     while((argc - idx) > 0){
@@ -192,10 +193,10 @@ static int _loadDtPart(int argc,char *argv[],int idx,int *error){
 }
 
 
-static int _loadAddArgs(int argc,char *argv[],int idx,int *error){
+static int _loadAddArgs(int argc,char *argv[],int idx,SHErrorCode* error){
     if(argc-idx < 1) return idx;
     TimeAdjustOptions opt = 0;
-    bool (*adder)(SHDatetime *,long,TimeAdjustOptions,int*) = 0;
+    bool (*adder)(SHDatetime *,int64_t,TimeAdjustOptions,SHErrorCode *) = 0;
     if(choiceHash == dtadd){
         long add = 0;
         while((argc - idx) > 0){
@@ -219,7 +220,7 @@ static int _loadAddArgs(int argc,char *argv[],int idx,int *error){
             }
             idx = _loadAddUnitArgs(argc,argv,&add,idx,error);
             if(*error) return setIndexErrorCode(*error,error);
-            if(adder) adder(&dt,add,opt,error);
+            if(adder) adder(&dt,add,opt,(SHErrorCode *)error);
             else setIndexErrorCode(*error,error);
             if(*error) return setIndexErrorCode(*error,error);
             break;
@@ -228,10 +229,10 @@ static int _loadAddArgs(int argc,char *argv[],int idx,int *error){
     return idx;
 }
 
-static int _loadAllArgs(int argc,char *argv[]){
+static SHErrorCode _loadAllArgs(int argc,char *argv[]){
     choiceHash = calcStrHash(argv[1]) % 33;
     int idx = 2;
-    int error = 0;
+    SHErrorCode error = 0;
     initDt(&dt);
     initDt(&dtb);
     idx = _loadDtPart(argc,argv,idx,&error);
@@ -242,7 +243,7 @@ static int _loadAllArgs(int argc,char *argv[]){
 }
 
 
-double cl_dtToTimestamp(int argc,char *argv[],int *error){
+double cl_dtToTimestamp(int argc,char *argv[],SHErrorCode* error){
     *error = _loadAllArgs(argc,argv);
     if(*error) return 0;
     double ts = 0;
@@ -251,38 +252,38 @@ double cl_dtToTimestamp(int argc,char *argv[],int *error){
 }
 
 
-void cl_timestampToDt(int argc,char *argv[],int *error,SHDatetime *dt_l){
+void cl_timestampToDt(int argc,char *argv[],SHErrorCode* error,SHDatetime *dt_l){
     *error = _loadAllArgs(argc,argv);
     *dt_l = dt;
 }
 
 
-void dtAdd(int argc,char *argv[],int *error,SHDatetime *dt_l){
+void dtAdd(int argc,char *argv[],SHErrorCode* error,SHDatetime *dt_l){
     *error = _loadAllArgs(argc,argv);
     *dt_l = dt;
 }
 
 
-long dayDiff(int argc,char *argv[],int *error){
+long dayDiff(int argc,char *argv[],SHErrorCode* error){
     *error = _loadAllArgs(argc,argv);
     if(*error) return 0;
     return dateDiffDays(&dt,&dtb,error);
 }
 
-double secDiff(int argc,char *argv[],int *error){
+double secDiff(int argc,char *argv[],SHErrorCode* error){
     *error = _loadAllArgs(argc,argv);
     if(*error) return 0;
     return dateDiffSecs(&dt,&dtb,error);
 }
 
-int cl_calcWeekdayIdx(int argc,char *argv[],int *error){
+int cl_calcWeekdayIdx(int argc,char *argv[],SHErrorCode* error){
     *error = _loadAllArgs(argc,argv);
     if(*error) return 0;
     return calcWeekdayIdx(&dt,error);
 }
 
 
-int selectChoice(int argc,char *argv[]){
+SHErrorCode selectChoice(int argc,char *argv[]){
     printf("Hello");
     if(argc < 2){
         printf("No input was given\n");
@@ -294,7 +295,7 @@ int selectChoice(int argc,char *argv[]){
     }
     printf("past\n");
     choiceHash = calcStrHash(argv[1]) % 33;
-    int error = 0;
+    SHErrorCode error = 0;
     if(choiceHash == dt_ts){
         double ans = cl_dtToTimestamp(argc,argv,&error);
         if(error) return error;
@@ -305,7 +306,7 @@ int selectChoice(int argc,char *argv[]){
         SHDatetime ans;
         cl_timestampToDt(argc,argv,&error,&ans);
         if(error) return error;
-        printf("%ld-%d-%d %d:%d:%d tz offset: %d\n",
+        printf("%lld-%d-%d %d:%d:%d tz offset: %d\n",
           dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
           ,dt.timezoneOffset);
         return NO_ERROR;
@@ -314,7 +315,7 @@ int selectChoice(int argc,char *argv[]){
         SHDatetime ans;
         dtAdd(argc,argv,&error,&ans);
         if(error) return error;
-        printf("%ld - %d - %d %d:%d:%d tz offset: %d\n",
+        printf("%lld - %d - %d %d:%d:%d tz offset: %d\n",
           dt.year,dt.month,dt.day,dt.hour,dt.minute,dt.second
           ,dt.timezoneOffset);
         return NO_ERROR;
@@ -341,7 +342,7 @@ int selectChoice(int argc,char *argv[]){
 }
 
 
-static int _cleanup(){
+static SHErrorCode _cleanup(){
     if(dt.shiftLen > 0){
         free(dt.shifts);
         dt.shiftLen = 0;
@@ -350,12 +351,12 @@ static int _cleanup(){
     return NO_ERROR;
 }
 
-int cl_datetime(int argc,char *argv[]){
+SHErrorCode cl_datetime(int argc,char *argv[]){
     if(argc < 2){
         printf("No input was given\n");
         return GEN_ERROR;
     }
-    int error = selectChoice(argc,argv);
+    SHErrorCode error = selectChoice(argc,argv);
     _cleanup();
     if(error){
         printf("Error!\n");

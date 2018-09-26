@@ -4,12 +4,12 @@ rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
 INC=-ISHGlobal_C -ISHDatetime -ISH_CTools
 HEADER_FILES := $(call rwildcard,./,*.h)
 SOURCES:= $(call rwildcard,./,*.c)
- OBJECTS=$(SOURCES:.c=.o)
- EXECUTABLE=dt_prompt
- DT_SHARED=dt
- DT_SHARED_FULL=lib${DT_SHARED}.so
- OPTIMIZE=-O3
- DEBUG?=$(OPTIMIZE)
+OBJECTS=$(SOURCES:.c=.o)
+EXECUTABLE=dt_prompt
+DT_SHARED=dt
+DT_SHARED_FULL=lib${DT_SHARED}.so
+OPTIMIZE=-O3
+DEBUG?=$(OPTIMIZE)
 
 
 all: $(HEADER_FILES) $(SOURCES) $(EXECUTABLE) COPY

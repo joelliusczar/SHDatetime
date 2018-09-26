@@ -6,29 +6,11 @@ from ctypes import c_double
 from ctypes import byref
 from ctypes import POINTER
 from datetime import datetime, timezone
+from SHDatetime_struct import Timeshift, SHDatetime
 import sys
 
 lib = cdll.LoadLibrary('./libdt.so')
 
-class Timeshift(Structure):
-    _fields_ = [("month",c_int),
-    ("day",c_int),
-    ("hour",c_int),
-    ("minute",c_int),
-    ("adjustment",c_int)]
-
-class SHDatetime(Structure):
-    _fields_ = [("year",c_long),
-    ("month",c_int),
-    ("day",c_int),
-    ("hour",c_int),
-    ("minute",c_int),
-    ("second",c_int),
-    ("milisecond",c_int),
-    ("timezoneOffset",c_int),
-    ("shifts",POINTER(Timeshift)),
-    ("shiftLen",c_int),
-    ("currentShiftIdx",c_int)]
 
 class MonthDay:
     month = 0
