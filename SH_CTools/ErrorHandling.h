@@ -33,12 +33,13 @@ typedef enum {
     NO_ERROR = 0,
     NULL_VALUES = 1,
     OUT_OF_RANGE = 2,
-    CORRUPT_STRUCT = 3
+    CORRUPT_STRUCT = 3,
+    GEN_ERROR = -1,
+    INVALID_STATE = -3
 } SHErrorCode;
 
 
-typedef bool (*ErrorCallback)(SHErrorCode err,const char* const msg,void* info,
-  bool* isError);
+typedef bool (*ErrorCallback)(SHErrorCode err,const char* const msg,void* info,bool* isError);
 
 typedef struct {
     SHErrorCode code;
@@ -54,7 +55,6 @@ bool handleError(SHErrorCode code,const char* const msg,SHError* errObj);
 int setIndexErrorCode(SHErrorCode code,SHErrorCode* error);
 int handleErrorRetNotFound(SHErrorCode code,const char* const msg,SHError* errObj);
 void * handleErrorRetNull(SHErrorCode code,const char* const msg,SHError* errObj);
-void setSHErrorDefault(SHError* errObj);
 void prepareSHError(SHError* errObj);
 void disposeSHError(SHError* errObj);
 void setDebugCallback(debugCallback callback);
